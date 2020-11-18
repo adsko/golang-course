@@ -1,0 +1,634 @@
+\documentclass[10pt]{beamer}
+\usepackage[cache=false]{minted}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,polish]{babel}
+\usepackage{polski}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\graphicspath{ {./images/} }
+\usetheme[progressbar=frametitle]{metropolis}
+\usepackage{appendixnumberbeamer}
+\usepackage{booktabs}
+\usepackage[scale=2]{ccicons}
+\usepackage{fancyvrb}
+
+\usepackage{pgfplots}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+\usepgfplotslibrary{dateplot}
+
+\usepackage{xspace}
+\newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
+\newcommand{\quotes}[1]{``#1''}
+\title{Golang - wstęp}
+\date{\today}
+\author{Adam Pietrzak}
+\institute{}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Spis treści}
+  \setbeamertemplate{section in toc}[sections numbered]
+  \tableofcontents%[hideallsubsections]
+\end{frame}
+
+\section[GoLang]{GoLang}
+\begin{frame}[fragile]
+    \frametitle{Wstęp}
+    GoLang (właściwie Go) - język programowania opracowany w 2009 na potrzeby Google.
+
+    Głównymi elementami języka są:
+    \begin{itemize}
+        \item statyczne typowanie - wszystkie wartości mają określony typ
+        \item silne typowanie - brak możliwości niejawnej zmiany typu
+        \item kompilacja do jednego pliku wykonywalnego - zawsze powstaje jeden plik
+        wykonywalny
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Wstęp - maskotka}
+    Maskotką i logiem języka Go jest "Go Gopher".
+
+    \begin{center}
+        \includegraphics[scale=5]{gopher.jpg}
+    \end{center}
+\end{frame}
+
+\section[Składnia]{Składnia}
+\begin{frame}[fragile]
+    \frametitle{Składnia}
+    Składnia Go jest podobna do języka C i Pythona (czasami).
+
+    Każdy program składa się z funkcji main, lecz plik ją zawierający może być
+    różnie nazwany.
+
+    Program jest dzielony na paczki, gdzie każda paczka może zawierać więcej
+    niż jeden plik źródłowy. Ważnym jest, że importując paczkę, importujemy wszystkie
+    pliki. Dzieje się tak, dlatego że paczka jest kompilowana jako jedno.
+
+    Dodatkowo, istnieją moduły. Moduły zawierają zbiór paczek ze sobą powiązanych,
+    oraz są wdrażane razem. Każde repozytorium zawiera przynajmniej jeden moduł!
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+    package main
+
+    import "fmt"
+
+    func main() {
+        fmt.Println("Hello, world.")
+    }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Składnia - pierwszy program}
+    \begin{minted}[fontsize=\footnotesize]{Go}
+    // Package information
+    package main
+    
+    // Imports
+    import "fmt"
+
+    // Main function
+    func main() {
+        fmt.Println("Hello, world.")
+    }
+    \end{minted}
+
+    \begin{block}{Nazewnictwo}
+        W GoLangu nazywanie funkcji, zmiennych itp. zależy od ich użycia.
+        Warto pamiętać, że jeżeli nazwa zawiera skrót, to nie mieszamy wielkich liter
+        z małymi w tym skrócie: \quotes{xmlValue}, \quotes{XMLToSave}, \quotes{makeXMLHTTPValue},
+        \quotes{xmlHTTPRequest}.
+
+        To samo dotyczy \quotes{ID}.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Prywatność i publiczność}
+    GoLang trzyma się jednej zasady, wszystko, co jest pisane z wielkiej litery,
+    jest publiczne, wszystko co z małej litery, jest prywatne.
+
+    Dotyczy to funkcji definiowanych na poziomie modułu, czy też
+    pól w obiektach.
+
+    Przykładowo, będąc w module \quotes{database}, zdefiniowałem funkcję:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        func add () {
+            // implementation
+        }
+    \end{minted}
+
+    W ramach modułu database, wszystkie pliki widzą i mogą używać tej funkcji.
+    Jeżeli ktoś wywoła tą funkcję spoza modułu database, pojawi się błąd kompilacji.
+
+
+    \begin{block}{Ciekawostka}
+        Funkcja main jest pisana z małej litery.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Struktura plików}
+    Go zmienia podejście do struktury plików. Pisząc kod w Javie, C++,
+    JS zazwyczaj pojawia się katalog \quotes{src} zawierający kod aplikacji.
+
+    Według GO, w katalogu głównym posiadamy plik go.mod, informujący co to jest
+    za moduł, a w podkatalogach różne paczki. W ramach modułu paczki mogą się importować,
+    dzięki czemu mamy do nich dostęp.
+
+    \begin{alertblock}{Circular dependency}
+        GoLang nie posiada możliwości rozwiązania circular dependency, więc
+        należy uważać na importy.
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Go modules}
+    Oryginalnie, GoLang nie pozwalał na tworzenie kodu poza zdefiniowaną zmienną
+    środowiskową \quotes{GOPATH}. Czyli wszystkie programy, aplikacje, biblioteki
+    musiały znajdować się w tej ścieżce.
+
+    Na szczęście, od GO $1.14$ pojawiły się \quotes{Production ready} Go Modules,
+    które pozwalają na tworzenie aplikacji w dowolnym miejscu na dysku.
+
+    \begin{block}{$< 1.14$}
+        Go Modules istniały już od 1.11, lecz zmieniały się w czasie.
+    \end{block}
+\end{frame}
+
+
+
+\section[Język]{Podstawy języka}
+\begin{frame}[fragile]
+    \frametitle{Zmienne}
+    Go posiada dwa sposoby definiowania zmiennych:
+
+    Pierwszym z nich jest słówko kluczowe \quotes{var}.
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        var i int = 0
+    \end{minted}
+
+    Dzięki takiemu zapisowi, możemy zdefiniować i zainicjalizować zmienną.
+    Dużym plusem jest tutaj możliwość samej definicji, bez inicjalizacji:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        var i int
+    \end{minted}
+
+    Każda zmienna bez inicjalizacji posiada wartość domyślną (\quotes{zero value}):
+    \begin{itemize}
+        \item 0 - dla liczb
+        \item \quotes{} - dla łańcucha znaków
+        \item false - dla typów logicznych
+    \end{itemize}
+
+    Drugim plusem tej definicji jest jasny typ zmiennej.
+
+    \begin{block}{Stałe}
+        Aby zdefiniować stałą, używamy słowa \quotes{const}.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Zmienne}
+    Drugim zapisem jest podstawienie \quotes{:=}. Dzięki niemu, nie musimy używać słowa
+    kluczowego \quotes{var}.
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        i := 0  // OK
+    \end{minted}
+
+    Podstawienie ma kilka wad:
+    \begin{itemize}
+        \item jeżeli zmienna istnieje, mamy błąd,
+        \item brak jasnego typu,
+        \item działa tylko w ciele funkcji
+    \end{itemize}
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        i := 0  // error
+
+        func main () {
+            i := 0 // ok
+
+            i = 2 // ok
+
+            i := 1 // error
+            var test uint
+            test = i // error, can not assign int -> uint
+        }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Typowanie i rzutowania}
+    Go jest silnie typowane. Nie każdy język statyczny jest silnie typowany,
+    przykładem jest C, gdzie poprzez wskaźnik można zmienić typ dowolnej zmiennej.
+
+    Go jest inne, tutaj typ jest ostateczny. Nadanie jakiegoś typu zmiennej
+    spowoduje, że żaden inny typ nie będzie to niej pasować.
+
+    Przykładowo:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        var i int = 0
+        var j int32 = 1
+        var k int64 = 2
+        var l string = ""
+
+        i = l // error
+        l = i // error
+        j = k // error
+        k = j // error
+        i = j // error
+    \end{minted}
+
+    \begin{alertblock}{Własne typy}
+        Dotyczy to także typów własnych!
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{If}
+    Ify są bardzo podobne do innych języków. Ich składnia nie wymaga
+    nawiasów. Przykład:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        if a == 2 {
+            return "OK"
+        }
+    \end{minted}
+
+    Jednak, GoLang dodaje możliwość łączenia przypisania z warunkiem,
+    co nam daje zapis:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        if a := 2; a == 2 {
+            return "OK"
+        }
+        // ...
+        if item, err := getItem(id); err == nil {
+            return "OK"
+        } else {
+            log.Panic(err)
+        }
+    \end{minted}
+
+    \begin{block}{Łączenie w praktyce}
+        Zapis łączenia jest często stosowany w Go, dlatego należy go 
+        rozumieć.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Pętla for}
+    Pętla for mocno nie różni się od innych języków:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        for i := 0; i < 10; i++ {
+            // Code
+        }
+        // Part of for can be skip and it goes to while
+        for value < 1000 {
+            value += getValue()
+        }
+    \end{minted}
+
+    Dodatkowo, można iterować za pomocą słowa kluczowego \quotes{range}:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        for index, value := range myArray {
+            // ...
+        }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Switch}
+    Pomimo podobnego zapisu i z pozoru podobnego działania, switch w GoLangu
+    daje dużo więcej możliwości:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        switch value {
+            case 20:
+                log.Print("20")
+            case 40:
+                log.Print("40")
+            default:
+                log.Print("Hmmm, not expected")
+        }
+    \end{minted}
+
+    Do tego, można zrobić zapis:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        switch value := getValue(); value {
+            // ...
+        }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Switch II}
+    Oczywiście, możemy nawet pominąć warunek:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        value := 20 + rand.Int()
+        switch {
+        case value == 20:
+            //
+        case time.Now().Hour() < 10:
+            //
+        }
+    \end{minted}
+
+    Widać, że mamy dużą wolność wyboru w pisaniu switcha. Switch nie wymaga
+    wartości stałych, czy też liczb do swojego działania. Dzięki temu
+    daje łatwość użycia.
+
+    Warto zauważyć, że nie używamy \quotes{break} na końcu \quotes{case}. Go
+    dodaje je automatycznie.
+
+    \begin{block}{Uwaga}
+        Switch jest wykonywany od góry do dołu i kończy się przy pierwszym trafieniu.
+        Aby wymusić kolejne warunki, należy użyć słowa kluczowego: \quotes{fallthrough}
+        na końcu warunku.
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Enum}
+    GoLang nie posiada implementacji Enuma. Jego zamiennik to zbiór stałych.
+    Można przykład zobaczyć w ćwiczeniu 1.
+
+    \begin{center}
+        \includegraphics[scale=0.25]{sad_gophers.png}
+    \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Funkcje}
+    Podstawowy zapis funkcji nie będzie odbiegać od innych języków:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        func MyFunction (arg1 int, arg2, arg3 string) bool {
+            return true
+        }
+    \end{minted}
+
+    Widzimy, że możemy skracać zapis wielu argumentów z tym samym typem.
+
+    Dodatkowo, funkcja daje możliwość zwracania wielu danych:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+    func MyFunction (arg1 int, arg2, arg3 string) (bool, int) {
+        return true, 20
+    }
+    
+    a, b := MyFunction(10, "a", "b")
+    \end{minted}
+    
+    \begin{alertblock}{Nawias w zwracaniu danych}
+        Nawias, który został dodany przy zwracanych danych jest wymagany
+        dla więcej niż jednego wyjścia!
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Funkcje II}
+    Dodatkowo, możemy tutaj zdefiniować nazwy zwracanych parametrów:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        func MyFunction (arg1 int, arg2, arg3 string) (test bool, value int) {
+            if arg1 > 10 {
+                test = true
+                value = 20
+            } else if arg1 == 10 {
+                return true, 10
+            }
+            test = false
+            return
+        }
+        
+        a, b := MyFunction(10, "a", "b")
+    \end{minted}
+
+    \begin{alertblock}{Uwaga!}
+        Funkcja która coś zwraca, zawsze musi wywołać słowo kluczowe \quotes{return}!
+    \end{alertblock}
+
+    \begin{block}{Kiedy nazywać, kiedy nie?}
+        Nazwy parametrów powinno się używać w przypadku, gdy chcemy ułatwić
+        zrozumienie co zwraca funkcja. Jeżeli zwracane wartości są jasne,
+        nie ma sensu wykorzystywać tego sposobu.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Funkcje III}
+    Często bywa tak, że chcemy reużyć nazwę zmiennej do wyjścia funkcji,
+    która zwraca więcej niż jeden parametr:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        value, err := getValue()
+        if err != nil {
+            // handle error
+        }
+
+        savedValue, err := saveValue()
+        _, err := saveValue() // Not it's error
+    \end{minted}
+
+    Jak widać Go pozwoli nam użyć skrócony zapis \quotes{:=} dopóki chociaż
+    jedna zmienna będzie nowa!
+
+    \begin{block}{Pomijanie parametrów wyjściowych}
+        W GoLangu, nieużywane zmienne, importy powodują błędy kompilacji.
+        Aby ich uniknąć, można użyć zapisu \quotes{\_ := myFunc()}
+    \end{block}
+
+    \begin{block}{Conistency}
+        Wiele osób uważa, że takie wykluczenie psuje spójność języka.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Funkcje IV - errory}
+    Go nie posiada wyjątków, przez co funkcje zwracają błędy.
+    Błędy implementują interface \quotes{error}. Do stworzenia nowego błędu
+    można użyć zapisu: \quotes{errors.New(string)}.
+
+    Konwencja mówi, aby zwracać błędy jako ostatni parametr wyjścia!
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        func getSmth() error {
+            // return fmt.Errorf("formatted error %s", "txt")
+        }
+        value, err := getValue()
+        err = getSmth()
+        a, b, c, err := getSmth3()
+    \end{minted}
+
+    \begin{alertblock}{Uwaga!}
+        Nie należy pomijać obsługi błędów (np. poprzez zapis \quotes{a, \_ := ...})!
+    \end{alertblock}
+
+    \begin{alertblock}{Uwaga 2!}
+        Nie rzucamy \quotes{panic} jeżeli nie musimy! Lepiej zwrócić błąd.
+    \end{alertblock}
+
+    \begin{block}{Tekst errorów}
+        Błędy powinny zaczynać się z malej litery i nie kończymy go kropką:
+        \quotes{this is correct error message}.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Defer, panic oraz recover}
+    Istnieją sytuacje w kodzie, gdzie musimy coś zrobić za wszelką cenę. Takim przykładem
+    jest otwarcie pliku. Jeżeli uda nam się utworzyć plik, to musimy go zamknąć.
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+    src, err := os.Open(srcName)
+    if err != nil {
+        return
+    }
+    // Long function
+    src.Close() // Wrong, function can be closed before!
+    \end{minted}
+
+    Ułatwieniem jest \quotes{defer}, który przeniesie wywołanie funkcji na sam koniec
+    jej wywołania (w tym panic także się łapie):
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        src, err := os.Open(srcName)
+        if err != nil {
+            return
+        }
+        defer src.Close() // No mather what, it'll be called
+        // Long function
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Defer, panic oraz recover II}
+    Czasami zdarza się tak, że jesteśmy w sytuacji bez wyjścia, gdzie my jako osoby piszące
+    funkcję oraz osoby osoby, które ją wywołały nie możemy obsłużyć błędu. Wtedy
+    właśnie możemy spanikować. 
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        panic("message")
+    \end{minted}
+
+    Panic jest pewnego rodzaju wyjątkiem, który wystąpił w aplikacji.
+    Ponieważ jego obsługa nie jest prosta, należy wywoływać go w \quotes{wyjątkowych}
+    sytuacjach.
+
+    \begin{block}{Używaj errora zamiast panikować}
+        Programista powinien stosować errory, zamiast przerywać bieg programu.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Defer, panic oraz recover III}
+    Recover ułatwia nam odzyskanie pracy programu po wystąpieniu paniki.
+    Jeżeli program panikuje i trafi na recover, jego przepływ wróci do normy.
+
+    Recover może być wywołany tylko w funkcji \quotes{defer}.
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        func test() {
+            defer func() {
+                if r := recover(); r != nil {
+                    fmt.Println("Recovered in f", r)
+                }
+            }()
+            panic("test")
+        }
+    \end{minted}
+
+    \begin{block}{Recovery + panic a wyjątki}
+        Zauważmy, że nie wiemy dokładnie kto i gdzie tutaj spanikował, przez co trudno obsługiwać
+        i odzyskiwać \quotes{flow} takiego programu.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Importowanie}
+    Importowanie paczek zaczyna się słowem kluczowym \quotes{import}. Przy importowaniu
+    ostatni człon importowanej paczki tworzy globalną zmienną:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        import "github.com/sonyarouje/simdb/db" // Makes db variable
+    \end{minted}
+
+    Oczywiście, mogą zdarzyć się konflikty, wtedy należy zmienić nazwę importu:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        import newName "github.com/sonyarouje/simdb/db" 
+        // Makes newName variable
+    \end{minted}
+
+    Importy można łączyć:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        import (
+            "a"
+            "b"
+        )
+    \end{minted}
+
+    Zewnętrzne paczki instaluje się za pomocą polecenie \quotes{go get}:
+    \begin{minted}[fontsize=\footnotesize]{shell}
+        go get github.com/mattbaird/jsonpatch
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Importowanie II}
+    Dodatkowo istnieje zapis, kóry powoduje, że wszystkie wyeksportowanie (pisanej z wielkiej litery) funkcje oraz
+    zmienne są dostępne bez prefiksu paczki:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        import . "b"
+    \end{minted}
+
+    \begin{alertblock}{Uwaga!}
+        Używanie tego poza testami jest uznawane jako anty-pattern. Czasami używa się
+        tego zapisu, aby ułatwić pisanie testów, które trafiły do innej paczki z powodu
+        circular dependency.       
+    \end{alertblock}
+
+    \begin{alertblock}{Uwaga 2!}
+        Paczki powinny być dobrze nazwane, zmiana nazw paczek bez konfliktów powinno 
+        występować bardzo rzadko.
+    \end{alertblock}
+
+    \begin{alertblock}{Uwaga 3!}
+        Jeżeli eksportujemy coś w paczce, nie duplikujemy nazewnictwa. Przykładowo, w
+        paczce \quotes{Math} nie tworzymy typów \quotes{MathNumber}. Takie coś zmniejsza
+        czytelność kodu: \quotes{math.MathNumber} vs \quotes{math.Number}.
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Importowanie II}
+    Widać po powyższych przykładach, że nie ma wersjonowania bibliotek. Go potrafi wersjonować biblioteki,
+    lecz robi to inaczej niż reszta języków. Według GoLanga, dopóki ścieżka importu
+    jest taka sama, nowa wersja paczki musi być wstecz kompatybilna.
+
+    Jeżeli chcemy wydać nową wersję ze złamaniem kompatybilności, zmieniamy ścieżkę 
+    importu:
+
+    \begin{minted}[fontsize=\footnotesize]{shell}
+        github.com/googleapis/gax-go @ master branch
+        /go.mod    → module github.com/googleapis/gax-go
+        /v2/go.mod → module github.com/googleapis/gax-go/v2
+    \end{minted}
+
+\end{frame}
+\end{document}
