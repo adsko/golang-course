@@ -2,6 +2,7 @@ package main
 
 import (
 	"cw1/database"
+	"cw1/web"
 	"errors"
 	"flag"
 	"fmt"
@@ -10,7 +11,7 @@ import (
 )
 
 func showWrongAction() {
-	fmt.Printf("Provide action: %s, %s or %s", "add", "remove", "list")
+	fmt.Printf("Provide action: %s, %s, %s or %s", "add", "remove", "list", "run-server")
 }
 
 func main() {
@@ -56,6 +57,12 @@ func main() {
 			fmt.Println(index + 1, ": ", item.Name, "\t", item.Description, "\t", item.Priority)
 		}
 
+	case "run-server":
+		err := web.Run()
+
+		if err != nil {
+			log.Panic("Could not run server: ", err)
+		}
 	default:
 		showWrongAction()
 	}
