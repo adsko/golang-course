@@ -1,9 +1,7 @@
 package web
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -19,28 +17,9 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getIssues(w http.ResponseWriter, r *http.Request){
-	err := outputJSON(w, [1]issueOutput{{
-		344,
-		"Test",
-		"Description",
-		"high",
-	}})
-
-	if err != nil {
-		log.Panic(err)
-	}
+	// {name: string, priority: string, description: string, id: int64}
 }
 
-func outputJSON(w http.ResponseWriter, v interface{}) error {
-	out, err := json.Marshal(v)
-
-	if err != nil {
-		return err
-	}
-	w.Header().Add("Content-Type", "application/json")
-	_, err = w.Write(out)
-	return err
-}
 
 // TODO: Define url: /api/add_issue -> {name: string, priority: string, description: string}, POST
 // TODO: Define url: /api/remove_issue/id -> POST
