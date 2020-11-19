@@ -34,7 +34,7 @@ func makeDBItem(name, description string, priority uint) DBItem {
 }
 
 func (d DBItem) ID() (jsonField string, value interface{}) {
-	jsonField = "id"
+	jsonField = "Name"
 	value = d.Name
 
 	return
