@@ -367,24 +367,176 @@
     \end{alertblock}
 \end{frame}
 
-\section[Mapa]{Mapa}
-\begin{frame}[fragile]
-    \frametitle{Mapa}
-\end{frame}
 
 \section[Struktury]{Struktury}
 \begin{frame}[fragile]
     \frametitle{Struktury}
+    Struktura to definicja własnego wyglądu obiektu. Zawiera ona zbiór pól, jakie
+    struktura ma zawierać.
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        type MyStruct struct {
+            FieldA int
+            FieldB string
+        }
+    \end{minted}
+
+    Warto pamiętać, że nazwy pól struktury także poddają się zasadzie prywatności ze
+    względu na wielkość pierwszej litery.
 \end{frame}
 
-
-\section[Interface]{Interface}
 \begin{frame}[fragile]
-    \frametitle{Interface}
+    \frametitle{Struktury II} 
+    Podstawowe poperacje na strukturze:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        type MyStruct struct {
+            FieldA int
+            FieldB string
+        }
+
+        myValue := MyStruct {
+            FieldA: "A",
+            FieldB: "B",
+        }
+
+        myValue2 := &MyStruct {
+            "A",
+            "B",
+        }
+
+        myValue == *myValue2 // true
+        myValue.A = "A1"
+        myValue2.B = "B"
+    \end{minted}
 \end{frame}
+
+\begin{frame}
+    \frametitle{Struktury III} 
+    Należy pamiętać, że podawanie pól w strukturze jest opcjonalne przy tworzeniu.
+    Najlepiej używać funkcji tworzących struktury.
+
+    Przekazywanie struktury jako argument funkcji powoduje zrobienie jej kopii.
+    Przy dużych strukturach zaleca się wskaźniki.
+
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Struktury IV} 
+    Struktury nie mogą po sobie dziedziczyć. Jako symulację tworzy się pole anonimowe:
+    
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        type MyStruct struct {
+            FieldA int
+            FieldB string
+        }
+
+        type ExtendedStruct struct {
+            MyStruct
+            FieldC string
+        }
+
+        a := ExtendedStruct{
+            MyStruct{
+                FieldA: 87,
+            },
+            "C",
+        }
+
+        a.FieldB == a.FieldC
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Struktury V}
+    Istnieje możliwość zdefiniowania struktury, która będzie posiadać własne metody.
+    Metody w GoLangu przyjmują \quotes{receivera}, który może być wskaźnikiem.
+    
+    \begin{minted}[fontsize=\footnotesize]{Go}
+    type MyStruct struct {
+        FieldA int
+        FieldB string
+    }
+
+    func (m *MyStruct) test () {
+    }
+
+    func (m MyStruct) test2 () {
+    }
+    \end{minted}
+
+    Receivery, które nie są wskaźnikami, nie mogą modyfikować struktury.
+
+    Zazwyczaj Go będzie dbać o poprawne tworzenie wskaźników w takiej strukturze.
+
+    \href{https://github.com/golang/go/wiki/CodeReviewComments#receiver-type}{Polecam ten URL jeżeli nie wiesz który typ wybrać}
+\end{frame}
+    
+
+\section[Mapa]{Map}
+\begin{frame}[fragile]
+    \frametitle{Map}
+    Mapa pozwala na zapisywanie wartości typu \quotes{klucz: wartość}. Pod spodem jest
+    zaimplementowana hashmap.
+
+    W mapie jako klucz może być dowolny typ, który da się porównać.
+
+    Mapę zapisujemy jako:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        var m map[string]int
+    \end{minted}
+
+    Mapa jest wskaźnikiem, dlatego też powyższy zapis spowoduje utworzenie zmiennej
+    z wartością nil. Aby przypisać jej wartość, można użyć \quotes{make}
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        m = make(map[string]int)
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Map II}
+    Mapę można szybciej inicjalizować:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        m := map[string]int{}
+
+        k := map[string]int{
+            "a": 20
+        }
+    \end{minted}
+
+    Operacje na mapie są proste:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        m["b"] = 50
+        a := m["a"] // if not exists, returns zero value
+
+        c, ok := m["c"]
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Map II}
+    Z mapy można usuwać elementy za pomocą funkcji \quotes{delete}
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        k := map[string]int{
+            "a": 20
+        }
+
+        delete(k, "a")
+    \end{minted}
+
+    Oraz po mapie można iterować:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        for key, value := range k {
+            
+        }
+    \end{minted}
+\end{frame}
+
+% rzutowanie
 
 % interface są dla używających
-
 % własne typy
-% rzutowanie
 \end{document}
