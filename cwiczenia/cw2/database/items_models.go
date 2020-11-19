@@ -1,5 +1,7 @@
 package database
 
+import "errors"
+
 type Priority string
 
 const(
@@ -15,6 +17,19 @@ func IsValidPriority (s string) (Priority, bool) {
 	}
 
 	return LOW, false
+}
+
+func PriorityAsString(i uint) (string, error) {
+	switch i {
+	case 0:
+		return string(LOW), nil
+	case 1:
+		return string(MEDIUM), nil
+	case 2:
+		return string(HIGH), nil
+	default:
+		return "", errors.New("not defined priority")
+	}
 }
 
 type DBItem struct {
