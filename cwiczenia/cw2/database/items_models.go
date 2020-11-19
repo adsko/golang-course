@@ -33,6 +33,14 @@ func makeDBItem(name, description string, priority uint) DBItem {
 	}
 }
 
+func getItemOnlyWithID(name string) DBItem {
+	return DBItem{
+		name,
+		"",
+		1,
+	}
+}
+
 func (d DBItem) ID() (jsonField string, value interface{}) {
 	jsonField = "Name"
 	value = d.Name
