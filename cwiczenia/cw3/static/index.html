@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test web</title>
+</head>
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js" type="text/javascript"></script>
+<script>
+    function hideLoading () {
+        $(".loading").hide();
+    }
+
+    function showLoading() {
+        $(".loading").show();
+    }
+
+    function clearAll() {
+        $(".data").off()
+        $(".data").html("");
+    }
+
+    function loadAll () {
+        clearAll();
+        showLoading();
+        $.get('/api/get_issues', (data) => {
+            hideLoading();
+            data.forEach((el) => {
+                const deleteButton = $("<button>Delete</button>");
+                deleteButton.click(() => {
+                   $.post("/api/remove_issue/" + data.id);
+                   loadAll();
+                });
+
+                const out = $([
+                    "<div>",
+                    "<span>",
+                        el.name + "(" + el.description + "): " + el.priority,
+                    "</span>",
+                    "<span class=\"delete\"></span>",
+                    "</div>"
+                ].join("\n"));
+
+                out.find(".delete").append(deleteButton);
+
+                $(".data").append(out);
+            });
+        });
+    }
+
+    $( document ).ready(function() {
+        loadAll();
+
+        $("#submit").click(() => {
+           const priotity = $("#priority")[0].value;
+           const name = $("#issueName")[0].value;
+           const description = $("#description")[0].value;
+
+           const data = {
+               priority: priotity,
+               name: name,
+               description: description
+           };
+
+            $.ajax({
+                type: 'POST',
+                url: '/api/add_issue',
+                data: JSON.stringify(data), // or JSON.stringify ({name: 'jonas'}),
+                success: function(data) { loadAll(); },
+                contentType: "application/json",
+            });
+        });
+    });
+</script>
+<body>
+    <div id="app">
+        <div class="loading">Loading...</div>
+        <div class="data">Will be removed</div>
+    </div>
+
+    <form>
+        <label for="issueName">Issue name:</label>
+        <input type="text" id="issueName" name="issueName"><br><br>
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description"><br><br>
+        <label for="priority">Priority:</label>
+        <select name="priority" id="priority">
+            <option value="high">high</option>
+            <option value="medium">medium</option>
+            <option value="low">low</option>
+        </select>
+    </form>
+    <button id="submit">Add</button>
+</body>
+</html>

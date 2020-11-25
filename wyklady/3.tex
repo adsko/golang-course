@@ -1,0 +1,325 @@
+\documentclass[10pt]{beamer}
+\usepackage[cache=false]{minted}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,polish]{babel}
+\usepackage{polski}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\graphicspath{ {./images/} }
+\usetheme[progressbar=frametitle]{metropolis}
+\usepackage{appendixnumberbeamer}
+\usepackage{booktabs}
+\usepackage[scale=2]{ccicons}
+\usepackage{fancyvrb}
+
+\usepackage{pgfplots}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+\usepgfplotslibrary{dateplot}
+
+\usepackage{xspace}
+\newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
+\newcommand{\quotes}[1]{``#1''}
+\title{Golang - wstęp}
+\date{\today}
+\author{Adam Pietrzak}
+\institute{}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Spis treści}
+  \setbeamertemplate{section in toc}[sections numbered]
+  \tableofcontents%[hideallsubsections]
+\end{frame}
+
+\section[Interface]{Interface}
+\begin{frame}[fragile]
+    \frametitle{Interface}
+    Interface jest zbiorem definicji funkcji, a dokładniej ich wyglądu.
+
+    Przykładowy wygląd interface:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        type MyInterface interface {
+            MyMethod(v int) int64
+        }
+    \end{minted}
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        type A struct {}
+
+        func (a A) MyMethod (v int) int64 {
+            return 2
+        }
+
+        var a MyInterface = A{}
+        func b () {
+            t := a.MyMethod(12)
+        }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Interface II}
+    Interface jest spełniony wtedy, kiedy wszystkie metody występują w danym typie.
+    Nie istnieje dodatkowy zapis mówiący, że dany typ implementuje interace.
+
+    Interface pod spodem jest zapisany jako \quotes{typ} oraz \quotes{wartość}.
+    Jest to bardzo ważne przy używanie interface.
+
+    Wartość interface może być \quotes{nil}:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        var a MyInterface = nil
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Interface III}
+    \quotes{nil} jako wartość interface jest ważna. Po pierwsze, można na niej uruchomić
+    metodę!
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        vat t *MyType
+        var a MyInterface = t
+        a.MyMethod()
+    \end{minted}
+
+    Nie jest to błąd w GoLang. W takiej sytuacji dostaniemy jako \quotes{receiver} nil:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        func (m *MyType) MyMethod() {
+            if m == nil {
+
+            }
+            // ...
+        }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Interface IV}
+    Wywołanie interface, który nie ma typu (jest \quotes{nil}), już pokaże błąd:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        var a MyInterface = nil
+        a.MyMethod()
+    \end{minted}
+
+    Dodatkowo, trzymanie typu w interface powoduje problemy z porównaniami:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        type MyError struct {}
+
+        func (m MyError) Error () string {
+            return ""
+        }
+        func test () error {
+            var e *MyError = nil
+            return e
+        }
+        func b () {
+            if test() == nil {
+            }
+        }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Interface V}
+    Istnieje w GoLangu typ: \quotes{any}. Jest nim zapis:
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        var a interface{}
+    \end{minted}
+
+    Ponieważ wszystko implementuje pusty interface, wszystko pasuje do tego zapisu.
+
+    Zapis ten powoduje problemy z typowaniem, ponieważ wszystko tutaj pasuje.
+
+    Dodatkowo, możemy mapować interface na ich typ wewnętrzny:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        var a interface{} = 23
+        c, ok := a.(int)
+    \end{minted}
+
+    \begin{alertblock}{Uwaga}
+        Typy muszą się zgadzać 1:1.
+    \end{alertblock}
+
+    \begin{block}{ok}
+        \quotes{ok} jest opcjonalne.
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Interface VI}
+    Istnieje dodatkowy zapis w \quotes{switch} ułatwiający mapowanie typów, gdy
+    funkcja może przyjąć więcej niż jeden typ:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        var a interface{} = 23
+
+        switch a.(type) {
+            case int:
+                // Code
+            case int64:
+                // Code
+        }
+    \end{minted}
+
+    \begin{alertblock}{Uwaga!}
+        Interface nie są dla tworzącego tylko dla używającego. Jeżeli nie ma 
+        potrzeby tworzenia interface, nie należy udostępniać interface!
+    \end{alertblock}
+\end{frame}
+
+\section[Własne typy]{Własne typy}
+\begin{frame}[fragile]
+    \frametitle{Własne typy}
+    Golang pozwala tworzy własne typy. Daje to nam możliwość większej
+    walidacji typów (typy muszą się zgadzać), oraz możliwości rozszerzenia typów:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        type A string
+        func (a A) Test () {
+
+        }
+
+        type B map[string]string
+    \end{minted}
+
+    Własne typy możemy rozszerzać o metody.
+    
+    W łatwy sposób, możemy rzutować typy:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        var a A  = "A"
+        var b string = string(a)
+        var c A = A(b)
+    \end{minted}
+\end{frame}
+
+\section[Wskaźniki]{GoRoutines}
+\begin{frame}[fragile]
+    \frametitle{GoRoutines}
+    \quotes{GoRoutines} jest sposobem na uruchamianie części kodu w innych wątkach.
+    Dzięki temu, w łatwy sposób można wykonywać operacje równolegle.
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+        func a () {
+            // Long running function
+        }
+
+        func b () {
+            // Opetations
+            go a()
+            // operations
+        }
+    \end{minted}
+
+    Funkcje te są uruchamiane w tej samej pamięci, więc należy synchronizować dostępy!
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Channel}
+    \quotes{channel} jest sposobem na komunikację z \quotes{goroutine}. Dzięki temu, możemy synchronizować 
+    wykonanie zadań, jak i również odbierać dane. 
+
+    \quotes{channel} tworzymy za pomocą funkcji \quotes{make}. Drugi parametr robi z channela buffor.
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+    func sum(s []int, c chan int) {
+        sum := 0
+        for _, v := range s {
+            sum += v
+        }
+        c <- sum // send sum to c
+    }
+    func main() {
+        s := []int{7, 2, 8, -9, 4, 0}
+        c := make(chan int)
+        go sum(s[:len(s)/2], c)
+        go sum(s[len(s)/2:], c)
+        x, y := <-c, <-c // receive from c
+        fmt.Println(x, y, x+y)
+    }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Channel II}
+    \quotes{buffered channel} może zawierać w sobie więcej niż jedną wartość do odebrania.
+    Ponieważ dopóki channel jest pełen, to wpisanie wartości blokuje wątek.
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+    func main() {
+        ch := make(chan int, 2)
+        ch <- 1
+        ch <- 2
+        fmt.Println(<-ch)
+        fmt.Println(<-ch)
+    }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Channel III}
+    Channele można używać z funkcją \quotes{range}, \quotes{len}, \quotes{cap}.
+    Dodatkowo, można je zamykać:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+    func fibonacci(n int, c chan int) {
+        x, y := 0, 1
+        for i := 0; i < n; i++ {
+            c <- x
+            x, y = y, x+y
+        }
+        close(c)
+    }
+    
+    func main() {
+        c := make(chan int, 10)
+        go fibonacci(cap(c), c)
+        for i := range c {
+            fmt.Println(i)
+        }
+    }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Channel IV}
+    Istnieje jeszcze funkcja select, która wywołuje kod w zależności który channel
+    jest do obsługi:
+
+    \begin{minted}[fontsize=\footnotesize]{Go}
+    func main() {
+        tick := time.Tick(100 * time.Millisecond)
+        boom := time.After(500 * time.Millisecond)
+        for {
+            select {
+            case <-tick:
+                fmt.Println("tick.")
+            case <-boom:
+                fmt.Println("BOOM!")
+                return
+            default:
+                time.Sleep(50 * time.Millisecond)
+            }
+        }
+    }
+    \end{minted}
+
+    \quotes{default} uruchamia się w sytuacji, gdy nie ma nic do obsługi.
+
+    Gdy kilka channeli jest gotowych do odebrania, \quotes{select} wybierze losowo.
+\end{frame}
+
+\end{document}
